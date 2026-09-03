@@ -12,10 +12,12 @@
 
 namespace {
 void heading(const std::string& title) {
+    // print a simple section label.
     std::cout << "\n" << title << "\n";
 }
 
 void printComponent(const WorkComponent& component) {
+    // render one component in the same readable format each time.
     std::cout << "  " << std::left << std::setw(13) << component.getId()
               << " | " << std::setw(56) << component.description()
               << " | priority=" << std::setw(2) << component.priority()
@@ -24,6 +26,7 @@ void printComponent(const WorkComponent& component) {
 
 WorkComponent& requireComponent(ProductionGroup& root,
                                 const std::string& componentId) {
+    // fetch a component or fail fast.
     WorkComponent* component = root.findById(componentId);
     if (component == 0) {
         throw std::logic_error("Required component not found: " + componentId);
@@ -32,6 +35,7 @@ WorkComponent& requireComponent(ProductionGroup& root,
 }
 
 void demonstrateIndependentTraversals(ProductionGroup& root) {
+    // each iterator should keep its own position.
     heading("Independent depth-first traversals");
     std::unique_ptr<WorkIterator> first = root.createDepthFirstIterator();
     std::unique_ptr<WorkIterator> second = root.createDepthFirstIterator();
@@ -48,6 +52,7 @@ void demonstrateIndependentTraversals(ProductionGroup& root) {
 }
 
 void printCompleteHierarchy(ProductionGroup& root) {
+    // walk the full structure and print every node.
     heading("Complete depth-first hierarchy");
     std::unique_ptr<WorkIterator> iterator = root.createDepthFirstIterator();
     while (iterator->hasNext()) {
@@ -56,6 +61,7 @@ void printCompleteHierarchy(ProductionGroup& root) {
 }
 
 void executeReadyOperations(ProductionGroup& root) {
+    // run only the operations that are ready to execute.
     heading("Ready-operation traversal");
     std::unique_ptr<WorkIterator> iterator =
         root.createReadyOperationIterator();
@@ -70,6 +76,7 @@ void executeReadyOperations(ProductionGroup& root) {
 
 int main() {
     try {
+        // build the order tree for the gearbox job.
         std::unique_ptr<ProductionGroup> order(
             new ProductionGroup("ORDER-1042", "Gearbox Order 1042",
                                 GroupKind::ORDER));
