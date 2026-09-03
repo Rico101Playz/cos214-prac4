@@ -12,7 +12,7 @@
 
 namespace {
 void heading(const std::string& title) {
-    std::cout << "\n=== " << title << " ===\n";
+    std::cout << "\n" << title << "\n";
 }
 
 void printComponent(const WorkComponent& component) {
