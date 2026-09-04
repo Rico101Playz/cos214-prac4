@@ -236,7 +236,7 @@ void runScenarioOne(ProductionGroup& order){
     std::cout << "\nNormal production work has completed successfully.\n";
 }
 
-//Scenario 2: Gearbox Production with CNC disruption, cell faulure and reassignment
+//Scenario 2: Gearbox Production with CNC disruption, cell failure and reassignment
 void runScenarioTwo(
     ProductionGroup& order,
     ProductionGroup& machiningCell,
