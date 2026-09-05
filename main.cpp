@@ -10,203 +10,212 @@
 #include "WorkIterator.h"
 #include "WorkOperation.h"
 
-namespace {
-void heading(const std::string& title) {
-    // print a simple section label.
-    std::cout << "\n=========================================================\n";
-    std::cout << "\n" << title << "\n";
-    std::cout << "\n=========================================================\n";
-}
-
-void printComponent(const WorkComponent& component) {
-    // render one component in the same readable format each time.
-    std::cout << "  " << std::left << std::setw(16) << component.getId()
-              << " | " << std::setw(64) << component.description()
-              << " | priority=" << std::setw(2) << component.priority()
-              << " | " << component.stateLabel() << "\n";
-}
-
-WorkComponent& requireComponent(ProductionGroup& root,
-                                const std::string& componentId) {
-    // fetch a component or fail fast.
-    WorkComponent* component = root.findById(componentId);
-    if (component == 0) {
-        throw std::logic_error("Required component not found: " + componentId);
+namespace
+{
+    void heading(const std::string &title)
+    {
+        // print a simple section label.
+        std::cout << "\n=========================================================\n";
+        std::cout << "\n"
+                  << title << "\n";
+        std::cout << "\n=========================================================\n";
     }
-    return *component;
-}
 
-void buildProductionOrder(  std::unique_ptr<ProductionGroup>& order,
-                            ProductionGroup*& machiningCellView,
-                            ProductionGroup*& overflowCellView,
-                            ProductionGroup*& assemblyCellView,
-                            const std::string& orderId,
-                            const std::string& orderName){
-    order.reset (new ProductionGroup (
-        orderId,
-        orderName,
-        GroupKind::ORDER
-    ));
+    void printComponent(const WorkComponent &component)
+    {
+        // render one component in the same readable format each time.
+        std::cout << "  " << std::left << std::setw(16) << component.getId()
+                  << " | " << std::setw(64) << component.description()
+                  << " | priority=" << std::setw(2) << component.priority()
+                  << " | " << component.stateLabel() << "\n";
+    }
 
-    std::unique_ptr<ProductionGroup> housingPhase(
-        new ProductionGroup(
-            "PHASE-HOUSING",
-            "Housing Manufacture",
-            GroupKind::PHASE
-        ));
+    WorkComponent &requireComponent(ProductionGroup &root,
+                                    const std::string &componentId)
+    {
+        // fetch a component or fail fast.
+        WorkComponent *component = root.findById(componentId);
+        if (component == 0)
+        {
+            throw std::logic_error("Required component not found: " + componentId);
+        }
+        return *component;
+    }
 
-    std::unique_ptr<ProductionGroup> cncLine(
-        new ProductionGroup(
-            "LINE-CNC",
-            "CNC Line A",
-            GroupKind::LINE
-        ));
+    void buildProductionOrder(std::unique_ptr<ProductionGroup> &order,
+                              ProductionGroup *&machiningCellView,
+                              ProductionGroup *&overflowCellView,
+                              ProductionGroup *&assemblyCellView,
+                              const std::string &orderId,
+                              const std::string &orderName)
+    {
+        order.reset(new ProductionGroup(
+            orderId,
+            orderName,
+            GroupKind::ORDER));
 
-    std::unique_ptr<ProductionGroup> machiningCell(
-        new ProductionGroup(
-            "CELL-MACHINE",
-            "Machining Cell",
-            GroupKind::CELL
-        ));
+        std::unique_ptr<ProductionGroup> housingPhase(
+            new ProductionGroup(
+                "PHASE-HOUSING",
+                "Housing Manufacture",
+                GroupKind::PHASE));
 
-    std::unique_ptr<ProductionGroup> overflowCell(
-        new ProductionGroup(
-            "CELL-OVERFLOW",
-            "Overflow CNC Cell",
-            GroupKind::CELL
-        ));
+        std::unique_ptr<ProductionGroup> cncLine(
+            new ProductionGroup(
+                "LINE-CNC",
+                "CNC Line A",
+                GroupKind::LINE));
 
-    machiningCellView = machiningCell.get();
-    overflowCellView = overflowCell.get();
+        std::unique_ptr<ProductionGroup> machiningCell(
+            new ProductionGroup(
+                "CELL-MACHINE",
+                "Machining Cell",
+                GroupKind::CELL));
 
-    machiningCell->add(std::unique_ptr<WorkComponent>(
-        new WorkOperation(
-            "OP-MILL",
-            "Mill gearbox housing",
-            90,
-            3
-        )));
+        std::unique_ptr<ProductionGroup> overflowCell(
+            new ProductionGroup(
+                "CELL-OVERFLOW",
+                "Overflow CNC Cell",
+                GroupKind::CELL));
 
-    machiningCell->add(std::unique_ptr<WorkComponent>(
-        new WorkOperation(
-            "OP-DRILL",
-            "Drill mounting holes",
-            45,
-            2)));
+        machiningCellView = machiningCell.get();
+        overflowCellView = overflowCell.get();
 
-    overflowCell->add(std::unique_ptr<WorkComponent>(
-        new WorkOperation(
-            "OP-DEBURR",
-            "Deburr housing",
-            25,
-            1)));
+        machiningCell->add(std::unique_ptr<WorkComponent>(
+            new WorkOperation(
+                "OP-MILL",
+                "Mill gearbox housing",
+                90,
+                3)));
 
-    cncLine->add(std::move(machiningCell));
-    cncLine->add(std::move(overflowCell));
-    housingPhase->add(std::move(cncLine));
+        machiningCell->add(std::unique_ptr<WorkComponent>(
+            new WorkOperation(
+                "OP-DRILL",
+                "Drill mounting holes",
+                45,
+                2)));
 
-    std::unique_ptr<ProductionGroup> assemblyPhase(
-        new ProductionGroup(
-            "PHASE-ASSEMBLY",
-            "Gear Assembly",
-            GroupKind::PHASE));
+        overflowCell->add(std::unique_ptr<WorkComponent>(
+            new WorkOperation(
+                "OP-DEBURR",
+                "Deburr housing",
+                25,
+                1)));
 
-    std::unique_ptr<ProductionGroup> assemblyLine(
-        new ProductionGroup(
-            "LINE-ASSEMBLY",
-            "Assembly Line 2",
-            GroupKind::LINE));
+        cncLine->add(std::move(machiningCell));
+        cncLine->add(std::move(overflowCell));
+        housingPhase->add(std::move(cncLine));
 
-    std::unique_ptr<ProductionGroup> assemblyCell(
-        new ProductionGroup(
-            "CELL-ASSEMBLY",
-            "Gear Fitment Cell",
-            GroupKind::CELL));
+        std::unique_ptr<ProductionGroup> assemblyPhase(
+            new ProductionGroup(
+                "PHASE-ASSEMBLY",
+                "Gear Assembly",
+                GroupKind::PHASE));
 
-    assemblyCellView = assemblyCell.get();
+        std::unique_ptr<ProductionGroup> assemblyLine(
+            new ProductionGroup(
+                "LINE-ASSEMBLY",
+                "Assembly Line 2",
+                GroupKind::LINE));
 
-    assemblyCell->add(std::unique_ptr<WorkComponent>(
-        new WorkOperation(
-            "OP-FIT",
-            "Fit gear train",
-            70,
-            4)));
+        std::unique_ptr<ProductionGroup> assemblyCell(
+            new ProductionGroup(
+                "CELL-ASSEMBLY",
+                "Gear Fitment Cell",
+                GroupKind::CELL));
 
-    assemblyCell->add(std::unique_ptr<WorkComponent>(
-        new WorkOperation(
-            "OP-TORQUE",
-            "Torque housing bolts",
-            30,
-            3)));
+        assemblyCellView = assemblyCell.get();
 
-    assemblyLine->add(std::move(assemblyCell));
-    assemblyPhase->add(std::move(assemblyLine));
+        assemblyCell->add(std::unique_ptr<WorkComponent>(
+            new WorkOperation(
+                "OP-FIT",
+                "Fit gear train",
+                70,
+                4)));
 
-    order->add(std::move(housingPhase));
-    order->add(std::move(assemblyPhase));
-}
-                            
+        assemblyCell->add(std::unique_ptr<WorkComponent>(
+            new WorkOperation(
+                "OP-TORQUE",
+                "Torque housing bolts",
+                30,
+                3)));
 
-void demonstrateIndependentTraversals(ProductionGroup& root) {
-    // each iterator should keep its own position.
-    heading("Independent depth-first traversals");
-    std::unique_ptr<WorkIterator> first = root.createDepthFirstIterator();
-    std::unique_ptr<WorkIterator> second = root.createDepthFirstIterator();
+        assemblyLine->add(std::move(assemblyCell));
+        assemblyPhase->add(std::move(assemblyLine));
 
-    std::cout << "First iterator advances twice:\n";
-    printComponent(first->next());
-    printComponent(first->next());
+        order->add(std::move(housingPhase));
+        order->add(std::move(assemblyPhase));
+    }
 
-    std::cout << "Second iterator still begins at the root:\n";
-    printComponent(second->next());
+    void demonstrateIndependentTraversals(ProductionGroup &root)
+    {
+        // each iterator should keep its own position.
+        heading("Independent depth-first traversals");
+        std::unique_ptr<WorkIterator> first = root.createDepthFirstIterator();
+        std::unique_ptr<WorkIterator> second = root.createDepthFirstIterator();
 
-    std::cout << "First iterator continues from its own cursor:\n";
-    printComponent(first->next());
-}
+        std::cout << "First iterator advances twice:\n";
+        printComponent(first->next());
+        printComponent(first->next());
 
-void printCompleteHierarchy(ProductionGroup& root) {
-    // walk the full structure and print every node.
-    heading("Complete depth-first hierarchy");
-    std::unique_ptr<WorkIterator> iterator = root.createDepthFirstIterator();
-    while (iterator->hasNext()) {
-        printComponent(iterator->next());
+        std::cout << "Second iterator still begins at the root:\n";
+        printComponent(second->next());
+
+        std::cout << "First iterator continues from its own cursor:\n";
+        printComponent(first->next());
+    }
+
+    void printCompleteHierarchy(ProductionGroup &root)
+    {
+        // walk the full structure and print every node.
+        heading("Complete depth-first hierarchy");
+        std::unique_ptr<WorkIterator> iterator = root.createDepthFirstIterator();
+        while (iterator->hasNext())
+        {
+            printComponent(iterator->next());
+        }
+    }
+
+    void executeReadyOperations(ProductionGroup &root)
+    {
+        // run only the operations that are ready to execute.
+        heading("Ready-operation traversal");
+        std::unique_ptr<WorkIterator> iterator =
+            root.createReadyOperationIterator();
+        while (iterator->hasNext())
+        {
+            WorkComponent &operation = iterator->next();
+            std::cout << "Selected " << operation.getId() << " in state "
+                      << operation.stateLabel() << "\n";
+            operation.executeStep();
+        }
     }
 }
 
-void executeReadyOperations(ProductionGroup& root) {
-    // run only the operations that are ready to execute.
-    heading("Ready-operation traversal");
-    std::unique_ptr<WorkIterator> iterator =
-        root.createReadyOperationIterator();
-    while (iterator->hasNext()) {
-        WorkComponent& operation = iterator->next();
-        std::cout << "Selected " << operation.getId() << " in state "
-                  << operation.stateLabel() << "\n";
-        operation.executeStep();
-    }
-}
-}
-
-void completeOperation(WorkComponent& operation){
+void completeOperation(WorkComponent &operation)
+{
     operation.finish();
 
-    try{
+    try
+    {
         operation.approveQuality();
     }
-    catch(const std::logic_error& error){
+    catch (const std::logic_error &error)
+    {
         std::cout << "Quality decision rejected: "
                   << error.what() << "\n";
         throw;
     }
 }
 
-//Normal Gearbox Production where nothing goes wrong
-void runScenarioOne(ProductionGroup& order){ 
+// Normal Gearbox Production where nothing goes wrong
+void runScenarioOne(ProductionGroup &order)
+{
     heading("Scenario 1: Normal Gearbox Production");
 
-    WorkComponent& mill = requireComponent(order,"OP-MILL");
-    WorkComponent& fit = requireComponent(order, "OP-FIT");
-    WorkComponent& torque = requireComponent(order, "OP-TORQUE");
+    WorkComponent &mill = requireComponent(order, "OP-MILL");
+    WorkComponent &fit = requireComponent(order, "OP-FIT");
+    WorkComponent &torque = requireComponent(order, "OP-TORQUE");
 
     std::cout << "Starting the housing and assembly work streams.\n";
 
@@ -236,11 +245,12 @@ void runScenarioOne(ProductionGroup& order){
     std::cout << "\nNormal production work has completed successfully.\n";
 }
 
-//Scenario 2: Gearbox Production with CNC disruption, cell failure and reassignment
+// Scenario 2: Gearbox Production with CNC disruption, cell failure and reassignment
 void runScenarioTwo(
-    ProductionGroup& order,
-    ProductionGroup& machiningCell,
-    ProductionGroup& overflowCell) {
+    ProductionGroup &order,
+    ProductionGroup &machiningCell,
+    ProductionGroup &overflowCell)
+{
 
     heading("SCENARIO 2: CNC disruption, reassignment and quality failure");
 
@@ -260,13 +270,13 @@ void runScenarioTwo(
     std::unique_ptr<WorkComponent> moved =
         machiningCell.remove("OP-DRILL");
 
-    //Add traceability so the decorated operation remains identifiable and auditable.
+    // Add traceability so the decorated operation remains identifiable and auditable.
     std::unique_ptr<TraceabilityDecorator> tracedDrill(
         new TraceabilityDecorator(std::move(moved), "CNC-A-07"));
 
-    TraceabilityDecorator* drillAuditView = tracedDrill.get();
+    TraceabilityDecorator *drillAuditView = tracedDrill.get();
 
-    //Stack a priority decorator around the traceability decorator
+    // Stack a priority decorator around the traceability decorator
     std::unique_ptr<WorkComponent> tracedAsComponent(
         std::move(tracedDrill));
 
@@ -277,7 +287,7 @@ void runScenarioTwo(
 
     overflowCell.add(std::move(expeditedDrill));
 
-    WorkComponent& currentDrill =
+    WorkComponent &currentDrill =
         requireComponent(order, "OP-DRILL");
 
     std::cout
@@ -291,13 +301,15 @@ void runScenarioTwo(
     std::cout
         << "\nChecking the traversal that was active during the reassignment:\n";
 
-    try {
+    try
+    {
         activeTraversal->hasNext();
 
         throw std::logic_error(
             "Iterator invalidation was not detected");
-
-    } catch (const std::logic_error& error) {
+    }
+    catch (const std::logic_error &error)
+    {
         std::cout
             << "  Expected result: "
             << error.what()
@@ -309,21 +321,23 @@ void runScenarioTwo(
 
     printComponent(currentDrill);
 
-    //Invalid lifecycle action
+    // Invalid lifecycle action
     std::cout
         << "\nAttempting an invalid quality approval before production begins:\n";
 
-    try {
+    try
+    {
         currentDrill.approveQuality();
-
-    } catch (const std::logic_error& error) {
+    }
+    catch (const std::logic_error &error)
+    {
         std::cout
             << "  Expected lifecycle rejection: "
             << error.what()
             << "\n";
     }
 
-    //Decorated operation
+    // Decorated operation
     currentDrill.start();
 
     std::cout
@@ -331,7 +345,7 @@ void runScenarioTwo(
 
     executeReadyOperations(order);
 
-    //Quality control
+    // Quality control
     currentDrill.finish();
 
     std::cout
@@ -353,14 +367,16 @@ void runScenarioTwo(
     currentDrill.executeStep();
     currentDrill.approveQuality();
 
-    //Showing that the completed operations can no longer execute
+    // Showing that the completed operations can no longer execute
     std::cout
         << "\nAttempting to execute the completed operation:\n";
 
-    try {
+    try
+    {
         currentDrill.executeStep();
-
-    } catch (const std::logic_error& error) {
+    }
+    catch (const std::logic_error &error)
+    {
         std::cout
             << "  Expected completed-state rejection: "
             << error.what()
@@ -381,10 +397,11 @@ void runScenarioTwo(
         << "and completed successfully.\n";
 }
 
-//Scenario 3: Rush order with defective assembly and independent production streams
+// Scenario 3: Rush order with defective assembly and independent production streams
 void runScenarioThree(
-    ProductionGroup& order,
-    ProductionGroup& assemblyCell) {
+    ProductionGroup &order,
+    ProductionGroup &assemblyCell)
+{
 
     heading("SCENARIO 3: Rush order with defective assembly");
 
@@ -395,7 +412,7 @@ void runScenarioThree(
         << "The assembly operation receives additional priority "
         << "and traceability responsibilities.\n";
 
-    WorkComponent& deburr =
+    WorkComponent &deburr =
         requireComponent(order, "OP-DEBURR");
 
     // OP-FIT is removed from its cell so that runtime decorators can be applied.
@@ -409,7 +426,7 @@ void runScenarioThree(
             "ASSEMBLY-B-02"));
 
     // Keep a non-owning reference for later audit inspection.
-    TraceabilityDecorator* fitAuditView =
+    TraceabilityDecorator *fitAuditView =
         tracedFit.get();
 
     // Stack priority on top of the traceability responsibility.
@@ -425,7 +442,7 @@ void runScenarioThree(
     assemblyCell.add(std::move(rushFit));
 
     // Retrieve the current decorated operation through the common WorkComponent abstraction.
-    WorkComponent& currentFit =
+    WorkComponent &currentFit =
         requireComponent(order, "OP-FIT");
 
     std::cout
@@ -478,14 +495,13 @@ void runScenarioThree(
     currentFit.executeStep();
 
     currentFit.approveQuality();
-    WorkComponent& rushTorque = requireComponent(order, "OP-TORQUE");
+    WorkComponent &rushTorque = requireComponent(order, "OP-TORQUE");
 
     // Start the remaining assembly operation after the defective rush fitting has been successfully approved.
     rushTorque.start();
     std::cout << "\nThe remaining assembly operation is now processed:\n";
     executeReadyOperations(order);
     completeOperation(rushTorque);
-
 
     std::cout
         << "\nThe rush assembly passes quality control.\n";
@@ -497,10 +513,12 @@ void runScenarioThree(
     std::cout
         << "\nAttempting to execute the completed rush operation:\n";
 
-    try {
+    try
+    {
         currentFit.executeStep();
-
-    } catch (const std::logic_error& error) {
+    }
+    catch (const std::logic_error &error)
+    {
         std::cout
             << "  Expected completed-state rejection: "
             << error.what()
@@ -524,13 +542,15 @@ void runScenarioThree(
         << "the order can proceed beyond the joined production streams.\n";
 }
 
-//new main()
-int main() {
-    try {
+// new main()
+int main()
+{
+    try
+    {
         std::unique_ptr<ProductionGroup> order;
-        ProductionGroup* machiningCellView = 0;
-        ProductionGroup* overflowCellView = 0;
-        ProductionGroup* assemblyCellView = 0;
+        ProductionGroup *machiningCellView = 0;
+        ProductionGroup *overflowCellView = 0;
+        ProductionGroup *assemblyCellView = 0;
 
         buildProductionOrder(
             order,
@@ -538,31 +558,30 @@ int main() {
             overflowCellView,
             assemblyCellView,
             "ORDER-1042",
-        "Gearbox Order 1042");
-
+            "Gearbox Order 1042");
 
         heading("TaskForge manufacturing system");
         std::cout << "Production order: " << order->description() << "\n";
         std::cout << "Total planned work: " << order->plannedMinutes() << " minutes\n";
         std::cout << "Highest effective priority before runtime " << "changes: " << order->priority() << "\n";
 
-        //Task2 Demonstration
+        // Task2 Demonstration
         demonstrateIndependentTraversals(*order);
         printCompleteHierarchy(*order);
 
-        //Scenario 1: Normal Production
+        // Scenario 1: Normal Production
         runScenarioOne(*order);
 
-        //Scenario 2: Gearbox Production with CNC disruption, cell faulure and reassignment
+        // Scenario 2: Gearbox Production with CNC disruption, cell faulure and reassignment
         runScenarioTwo(
             *order,
             *machiningCellView,
             *overflowCellView);
 
         std::unique_ptr<ProductionGroup> rushOrder;
-        ProductionGroup* rushAssemblyCellView = 0;
-        ProductionGroup* rushMachiningCellView = 0;
-        ProductionGroup* rushOverflowCellView = 0;
+        ProductionGroup *rushAssemblyCellView = 0;
+        ProductionGroup *rushMachiningCellView = 0;
+        ProductionGroup *rushOverflowCellView = 0;
 
         buildProductionOrder(
             rushOrder,
@@ -572,7 +591,7 @@ int main() {
             "ORDER-RUSH-2048",
             "Rush Gearbox Order 2048");
 
-        //Scenario 3: Rush Order with defective assembly
+        // Scenario 3: Rush Order with defective assembly
         runScenarioThree(
             *rushOrder,
             *rushAssemblyCellView);
@@ -586,20 +605,21 @@ int main() {
         heading("Task 3 demonstration complete");
 
         return 0;
-
-    } catch (const std::exception& error) {
+    }
+    catch (const std::exception &error)
+    {
         std::cerr
             << "TaskForge failed: " << error.what() << "\n";
         return 1;
     }
 }
-//old main
-// int main() {
-//     try {
-//         // build the order tree for the gearbox job.
-//         std::unique_ptr<ProductionGroup> order(
-//             new ProductionGroup("ORDER-1042", "Gearbox Order 1042",
-//                                 GroupKind::ORDER));
+// old main
+//  int main() {
+//      try {
+//          // build the order tree for the gearbox job.
+//          std::unique_ptr<ProductionGroup> order(
+//              new ProductionGroup("ORDER-1042", "Gearbox Order 1042",
+//                                  GroupKind::ORDER));
 
 //         std::unique_ptr<ProductionGroup> housingPhase(
 //             new ProductionGroup("PHASE-HOUSING", "Housing Manufacture",

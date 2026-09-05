@@ -14,10 +14,11 @@ class QualityCheckState;
 class QueuedState;
 class ReworkState;
 
-class WorkOperation : public WorkComponent {
+class WorkOperation : public WorkComponent
+{
 public:
-    WorkOperation(const std::string& id,
-                  const std::string& name,
+    WorkOperation(const std::string &id,
+                  const std::string &name,
                   int baseMinutes,
                   int basePriority);
     virtual ~WorkOperation();
@@ -27,7 +28,7 @@ public:
     virtual int priority() const;
     virtual std::string stateLabel() const;
     virtual bool canExecuteStep() const;
-
+    virtual bool isLeaf() const;
     virtual void executeStep();
     virtual void start();
     virtual void finish();
@@ -35,9 +36,9 @@ public:
     virtual void rejectQuality();
 
 protected:
-    virtual void collectDepthFirst(std::vector<WorkComponent*>& snapshot);
+    virtual void collectDepthFirst(std::vector<WorkComponent *> &snapshot);
     virtual void collectOperationLeaves(
-        std::vector<WorkComponent*>& snapshot);
+        std::vector<WorkComponent *> &snapshot);
 
 private:
     void transitionTo(std::unique_ptr<OperationState> nextState);
