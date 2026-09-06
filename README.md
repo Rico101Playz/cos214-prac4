@@ -1,9 +1,15 @@
 # TaskForge
 
-A hierarchical work-processing system for gearbox manufacturing, demonstrating
+A hierarchical work-processing system for manufacturing, demonstrating
 Iterator, Composite, State, and Decorator (COS 214 Practical 4).
 
 DockerDesktop is needed to run the taskforge. This will have all the debugging inside it
+
+from project's parent folder(in windows powershell):
+docker build -t taskforge .
+docker run -it taskforge
+
+
 the following command takes you into the container to run commands(If you are using Windows powershell not wsl):
 docker run -it --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v "${PWD}:/app" taskforge bash
 
@@ -13,9 +19,7 @@ make clean && make
 run: 
 ./taskforge
 
-from project's parent folder(in windows powershell):
-docker build -t taskforge .
-docker run -it taskforge
+
 
 Debugging with GDB
 
