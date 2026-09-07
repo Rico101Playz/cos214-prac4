@@ -744,7 +744,7 @@ namespace
     bool interactiveStartup()
     {
         InteractiveTerminal terminal;
-        const int startupWaitSeconds = 2;
+        const int startupWaitSeconds = 0.5;
         std::cout << terminal.color("\033[1;36m")
                   << "\n  TASKFORGE  |  Press any key within " << startupWaitSeconds
                   << " seconds for production control.\n"
